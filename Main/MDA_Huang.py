@@ -8,7 +8,7 @@ Multi dimensional analysis built on top of MLE. Experimental
 """
 import numpy as np
 from Main.MLEV3 import PyMastic
-def Layer3D(L,LPos,a,x,y,z,H,E,nu,it,ZRO=7*1e-22 ,isBD=[1,1],tolerance=10**-6,verbose=True):
+def Layer3D(L,LPos,a,x,y,z,H,E,nu,it,ZRO=7*1e-22 ,isBD=[1,1],tolerance=10**-6,verbose=True,every=100):
     #First, we are going to calculate x,y and z stresses from z,r and t. Then we are going to use superposition to add those up
     #At the end, with everything in place, we are going to calculate strains
     tolerance=tolerance/100
@@ -37,7 +37,7 @@ def Layer3D(L,LPos,a,x,y,z,H,E,nu,it,ZRO=7*1e-22 ,isBD=[1,1],tolerance=10**-6,ve
         unique_pts=np.unique(pts) #Find the unique ones to save time
         #Calculate the stresses (and strains but we are not using them yet)
         try:
-            DRS[i] = PyMastic(L[i]/np.pi/a**2,a,unique_pts,z,H,E,nu, ZRO, isBounded = np.ones(len(H)), iteration = it, inverser = 'solve',tol=tolerance,every=100,verbose=verbose)
+            DRS[i] = PyMastic(L[i]/np.pi/a**2,a,unique_pts,z,H,E,nu, ZRO, isBounded = np.ones(len(H)), iteration = it, inverser = 'solve',tol=tolerance,every=every,verbose=verbose)
         except:
             DRS[i] = PyMastic(L[i]/np.pi/a**2,a,unique_pts,z,H,E,nu, ZRO, isBounded = np.ones(len(H)), iteration = it, inverser = 'solve',tol=tolerance,every=20,verbose=verbose)
         # We have to convert the unique points back into the grid form
