@@ -7,13 +7,14 @@ Created on Sat Jun  5 19:57:57 2021
 Multi dimensional analysis built on top of MLE. Experimental
 """
 import numpy as np
-from Main.MLEV3 import PyMastic
+# from Main.MLEV3 import PyMastic
+from Main.MLEV_Parallel import PyMastic
 def Layer3D(L,LPos,a,x,y,z,H,E,nu,it,ZRO=7*1e-22 ,isBD=[1,1],tolerance=10**-6,verbose=True,every=100):
     #First, we are going to calculate x,y and z stresses from z,r and t. Then we are going to use superposition to add those up
     #At the end, with everything in place, we are going to calculate strains
     tolerance=tolerance/100
     it=int(it/4) # number of iterations
-    newkeys=['eps_x','eps_y','eps_z','sigma_x','sigma_y','sigma_z','sigma_xy','deflection_z']
+    # newkeys=['eps_x','eps_y','eps_z','sigma_x','sigma_y','sigma_z','sigma_xy','deflection_z']
     newkeys=['deflection_z','sigma_x','sigma_y','sigma_z','sigma_xy','sigma_yz','sigma_xz','eps_x','eps_y','eps_z','eps_xy','eps_yz','eps_xz']
     RS={}
     
@@ -56,7 +57,7 @@ def Layer3D(L,LPos,a,x,y,z,H,E,nu,it,ZRO=7*1e-22 ,isBD=[1,1],tolerance=10**-6,ve
                 RS['sigma_xy'][idx[0],idx[1],:]=RS['sigma_xy'][idx[0],idx[1],:]+(DRS[i]['Stress_R'][:,j]-DRS[i]['Stress_T'][:,j])*np.sin(t[idx[0],idx[1]])*np.cos(t[idx[0],idx[1]])
                 RS['sigma_yz'][idx[0],idx[1],:]=RS['sigma_yz'][idx[0],idx[1],:]+DRS[i]['Stress_RZ'][:,j]*np.sin(t[idx[0],idx[1]])
                 RS['sigma_xz'][idx[0],idx[1],:]=RS['sigma_xz'][idx[0],idx[1],:]+DRS[i]['Stress_RZ'][:,j]*np.cos(t[idx[0],idx[1]])
-                RS['eps_z'][idx[0],idx[1],:]=RS['eps_z'][idx[0],idx[1],:]+DRS[i]['Strain_Z'][:,j]   
+                # RS['eps_z'][idx[0],idx[1],:]=RS['eps_z'][idx[0],idx[1],:]+DRS[i]['Strain_Z'][:,j]   
         
         RS=calculate_strain(RS,H,E,nu,z)
                 
@@ -81,7 +82,7 @@ def calculate_strain(RS,H,E,nu,z):
         Eglobal[:,:,i]=E[layer]
         nuglobal[:,:,i]=nu[layer]
         
-    
+    RS['eps_z']=1/Eglobal*(RS['sigma_z']-nuglobal*(RS['sigma_x']+RS['sigma_y']))
     RS['eps_x']=1/Eglobal*(RS['sigma_x']-nuglobal*(RS['sigma_z']+RS['sigma_y']))
     RS['eps_y']=1/Eglobal*(RS['sigma_y']-nuglobal*(RS['sigma_z']+RS['sigma_x']))
     RS['eps_xy']=2*(1+nuglobal)/Eglobal*RS['sigma_xy']
