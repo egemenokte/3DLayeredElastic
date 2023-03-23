@@ -365,11 +365,14 @@ def PyMastic(q,a,x,z,H,E,nu, ZRO=1e-15, isBounded = [1,1], iteration = 25, inver
                              np.exp(-mm*(Ll-Lamdaa))) 
                     tauRZ =   -1 * q * alpha * np.sum(ftt * Rs * special.jv(1, mm * alpha) * (1 / mm),2)
                     
-                    # epsZ = 1 / Ee * (sigmaZ - nuu * (sigmaT + sigmaR))
+                    Eexz=np.tile(Ee[:,0,0].reshape(-1,1),len(x))
+                    nuuxz=np.tile(nuu[:,0,0].reshape(-1,1),len(x))
                     
-                    # epsR = 1 / Ee * (sigmaR - nuu * (sigmaZ + sigmaT))
+                    epsZ = 1 / Eexz * (sigmaZ - nuuxz * (sigmaT + sigmaR))
+                    
+                    epsR = 1 / Eexz * (sigmaR - nuuxz * (sigmaZ + sigmaT))
            
-                    # epsT = 1 / Ee * (sigmaT - nuu * (sigmaZ + sigmaR))                      
+                    epsT = 1 / Eexz * (sigmaT - nuuxz * (sigmaZ + sigmaR))                      
 
         
                     Response ={"Displacement_Z": displacementZ, 
