@@ -59,11 +59,11 @@ def Layer3D(L,LPos,a,x,y,z,H,E,nu,it,ZRO=7*1e-22 ,isBD=[1,1],tolerance=10**-6,ve
                 RS['sigma_xz'][idx[0],idx[1],:]=RS['sigma_xz'][idx[0],idx[1],:]+DRS[i]['Stress_RZ'][:,j]*np.cos(t[idx[0],idx[1]])
                 # RS['eps_z'][idx[0],idx[1],:]=RS['eps_z'][idx[0],idx[1],:]+DRS[i]['Strain_Z'][:,j]   
         
-        RS=calculate_strain(RS,H,E,nu,z)
+        RS=calculate_strain_2(RS,H,E,nu,z)
                 
     return RS
 
-def calculate_strain(RS,H,E,nu,z):
+def calculate_strain(RS,H,E,nu,z): #there is an error in this function, fixed with calculate_strain_2
     Eglobal=RS['sigma_z']*0
     nuglobal=RS['sigma_z']*0
     Hsum=np.cumsum(H)
@@ -79,6 +79,24 @@ def calculate_strain(RS,H,E,nu,z):
             Eglobal[:,:,i:]=E[layer]
             nuglobal[:,:,i:]=nu[layer]
             break
+        Eglobal[:,:,i]=E[layer]
+        nuglobal[:,:,i]=nu[layer]
+        
+    RS['eps_z']=1/Eglobal*(RS['sigma_z']-nuglobal*(RS['sigma_x']+RS['sigma_y']))
+    RS['eps_x']=1/Eglobal*(RS['sigma_x']-nuglobal*(RS['sigma_z']+RS['sigma_y']))
+    RS['eps_y']=1/Eglobal*(RS['sigma_y']-nuglobal*(RS['sigma_z']+RS['sigma_x']))
+    RS['eps_xy']=2*(1+nuglobal)/Eglobal*RS['sigma_xy']
+    RS['eps_yz']=2*(1+nuglobal)/Eglobal*RS['sigma_yz']
+    RS['eps_xz']=2*(1+nuglobal)/Eglobal*RS['sigma_xz']
+    return RS
+
+def calculate_strain_2(RS,H,E,nu,z): #Updated version of global E and nu calculation
+    Eglobal=RS['sigma_z']*0
+    nuglobal=RS['sigma_z']*0
+    Hsum=np.copy(np.cumsum(H))
+    Hsum=np.append(Hsum,10**6)
+    for i in range(len(z)):
+        layer=np.argmax(z[i]<Hsum)
         Eglobal[:,:,i]=E[layer]
         nuglobal[:,:,i]=nu[layer]
         
