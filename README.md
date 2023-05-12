@@ -1,5 +1,5 @@
 # 3DLayeredElastic
-3D Layered elastic analysis running on Python. Please run [PythonLEA.ipnb](https://colab.research.google.com/github/egemenokte/3DLayeredElastic/blob/main/PythonLEA.ipynb) on Google Colab to see instructions on how to run the code. You may use the following link to access
+3D Layered elastic analysis running on Python. Please run [PythonLEA.ipnb](https://colab.research.google.com/github/egemenokte/3DLayeredElastic/blob/main/PythonLEA.ipynb) on Google Colab to see instructions on how to run the code. You may also use the following link to access
 
 https://colab.research.google.com/github/egemenokte/3DLayeredElastic/blob/main/PythonLEA.ipynb
 
