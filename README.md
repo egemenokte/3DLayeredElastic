@@ -7,5 +7,5 @@ For manual analysis, or if you want to download the code and run yoursef, please
 
 Built on top of [PyMastic](https://github.com/Mostafa-Nakhaei/PyMastic) and modified to run parellelized 3D analysis with multiple loads. Experimental. 
 
+![3DLEAv2](https://github.com/egemenokte/3DLayeredElastic/assets/45702242/79919c0f-628c-47ef-982b-b99a3cc560c1)
 
-![image](https://github.com/egemenokte/3DLayeredElastic/assets/45702242/b1c1cf7d-e1e9-4616-a408-90c25813c03e)
