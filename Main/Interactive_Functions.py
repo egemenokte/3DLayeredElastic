@@ -1,3 +1,7 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 def fewpoints(x,y,z,RSO,download):
 
   columns=['x','y','z']+list(RSO.keys())
@@ -17,17 +21,20 @@ def fewpoints(x,y,z,RSO,download):
           DF.loc[counter,col]=RSO[col][yy,xx,zz]*mult
         counter=counter+1
   if download:
+    from google.colab import files
     DF.to_excel("PLEA.xlsx")
     files.download('PLEA.xlsx')
   return DF
   
 def plot_interactive_heatmap(title, data, label, x, z, H, aspect=(15,8), interpolate=True):
+    import plotly.graph_objects as go
     """ Plots interactive heatmap, adjusted for exact edge alignment. """
     # Verify input data shape matches coordinate lengths
     if data.shape != (len(x), len(z)):
         raise ValueError(f"Input data shape {data.shape} does not match len(x)={len(x)}, len(z)={len(z)}. Expected shape ({len(x)}, {len(z)}).")
 
     if interpolate:
+        from scipy.interpolate import RegularGridInterpolator
         # Create finer grids for interpolation
         x_new = np.linspace(x.min(), x.max(), 300)
         z_new = np.linspace(z.min(), z.max(), 300)
