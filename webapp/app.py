@@ -9,12 +9,8 @@ import numpy as np
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_cors import CORS
 
-# Add parent directory (3DLayeredElastic) to path for Main module imports
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-if parent_dir not in sys.path:
-    sys.path.insert(0, parent_dir)
-
-from Main.MDA_Huang import Layer3D
+# Import Layer3D from local copy (for cloud deployment compatibility)
+from MDA_Huang import Layer3D
 
 app = Flask(__name__, static_folder='.', template_folder='.')
 CORS(app)
