@@ -8,7 +8,7 @@ Multi dimensional analysis built on top of MLE. Experimental
 """
 import numpy as np
 # from Main.MLEV3 import PyMastic
-from Main.MLEV_Parallel import PyMastic
+from MLEV_Parallel import PyMastic
 def Layer3D(L,LPos,a,x,y,z,H,E,nu,it,ZRO=7*1e-22 ,isBD=[1,1],tolerance=10**-6,verbose=True,every=100):
     #First, we are going to calculate x,y and z stresses from z,r and t. Then we are going to use superposition to add those up
     #At the end, with everything in place, we are going to calculate strains
