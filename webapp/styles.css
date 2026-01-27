@@ -335,7 +335,7 @@ body::before {
     background: var(--bg-secondary);
     border-radius: var(--radius-md);
     position: relative;
-    overflow: hidden;
+    /* overflow: hidden; Removed to allow labels to be seen if they extend past bounds */
 }
 
 .results-table-container {

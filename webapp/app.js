@@ -875,19 +875,21 @@ function renderCachedHeatmap() {
             title: { text: `x (${UNITS[state.unitSystem].length})`, font: { color: '#94a3b8', size: 11 } },
             tickfont: { color: '#94a3b8', size: 10 },
             gridcolor: 'rgba(148, 163, 184, 0.1)',
-            zerolinecolor: 'rgba(148, 163, 184, 0.2)'
+            zerolinecolor: 'rgba(148, 163, 184, 0.2)',
+            automargin: true
         },
         yaxis: {
             title: { text: `z (${UNITS[state.unitSystem].length})`, font: { color: '#94a3b8', size: 11 } },
             tickfont: { color: '#94a3b8', size: 10 },
             autorange: 'reversed',
             gridcolor: 'rgba(148, 163, 184, 0.1)',
-            zerolinecolor: 'rgba(148, 163, 184, 0.2)'
+            zerolinecolor: 'rgba(148, 163, 184, 0.2)',
+            automargin: true
         },
         shapes: shapes,
         paper_bgcolor: 'transparent',
         plot_bgcolor: '#111827',
-        margin: { t: 40, b: 50, l: 50, r: 20 },
+        margin: { t: 40, b: 80, l: 70, r: 20 },
         font: { family: 'Inter, sans-serif' }
     };
 
@@ -1010,18 +1012,20 @@ function renderLinePlotFromCache() {
         xaxis: {
             title: { text: `${axisLabel} (${UNITS[state.unitSystem].length})`, font: { color: '#94a3b8', size: 11 } },
             tickfont: { color: '#94a3b8', size: 10 },
-            gridcolor: 'rgba(148, 163, 184, 0.1)'
+            gridcolor: 'rgba(148, 163, 184, 0.1)',
+            automargin: true
         },
         yaxis: {
             title: { text: 'Response Value', font: { color: '#94a3b8', size: 11 } },
             tickfont: { color: '#94a3b8', size: 10 },
-            gridcolor: 'rgba(148, 163, 184, 0.1)'
+            gridcolor: 'rgba(148, 163, 184, 0.1)',
+            automargin: true
         },
         shapes: shapes,
         legend: { font: { color: '#94a3b8', size: 10 }, bgcolor: 'rgba(17, 24, 39, 0.8)' },
         paper_bgcolor: 'transparent',
         plot_bgcolor: '#111827',
-        margin: { t: 40, b: 50, l: 70, r: 20 },
+        margin: { t: 40, b: 80, l: 70, r: 20 },
         font: { family: 'Inter, sans-serif' }
     };
 
@@ -1078,19 +1082,21 @@ function renderProfile(result) {
         xaxis: {
             title: { text: xTitle, font: { color: '#94a3b8', size: 11 } },
             tickfont: { color: '#94a3b8', size: 10 },
-            gridcolor: 'rgba(148, 163, 184, 0.1)'
+            gridcolor: 'rgba(148, 163, 184, 0.1)',
+            automargin: true
         },
         yaxis: {
             title: { text: yTitle, font: { color: '#94a3b8', size: 11 } },
             tickfont: { color: '#94a3b8', size: 10 },
             autorange: profileType === 'depth' ? 'reversed' : true,
-            gridcolor: 'rgba(148, 163, 184, 0.1)'
+            gridcolor: 'rgba(148, 163, 184, 0.1)',
+            automargin: true
         },
         shapes: shapes,
         legend: { font: { color: '#94a3b8', size: 10 }, bgcolor: 'rgba(17, 24, 39, 0.8)' },
         paper_bgcolor: 'transparent',
         plot_bgcolor: '#111827',
-        margin: { t: 40, b: 50, l: 60, r: 20 },
+        margin: { t: 40, b: 80, l: 70, r: 20 },
         font: { family: 'Inter, sans-serif' }
     };
 
