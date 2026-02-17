@@ -946,7 +946,7 @@ input[type="number"]::-webkit-outer-spin-button {
     background: var(--bg-tertiary);
     font-weight: 600;
     font-size: 0.7rem;
-    text-transform: uppercase;
+    text-transform: none;
     color: var(--text-secondary);
     position: sticky;
     top: 0;
