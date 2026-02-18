@@ -736,7 +736,8 @@ function prepareHeatmapData() {
         xMax: getVal('xMax', 30),
         zMin: getVal('zMin', 0),
         zMax: getVal('zMax', 30),
-        resolution: getVal('resolution', 1)
+        resolution: getVal('resolution', 1),
+        unitSystem: state.unitSystem
         // Note: selectedResponse removed - backend now returns ALL responses
     };
 }
@@ -756,7 +757,8 @@ function prepareProfileData() {
         rangeMin: getValSafe('profileRangeMin', 0),
         rangeMax: getValSafe('profileRangeMax', 30),
         resolution: getValSafe('profileResolution', 0.5),
-        selectedResponses: responses.length > 0 ? responses : ['eps_z', 'sigma_z']
+        selectedResponses: responses.length > 0 ? responses : ['eps_z', 'sigma_z'],
+        unitSystem: state.unitSystem
     };
 }
 
@@ -782,7 +784,8 @@ function preparePointwiseData() {
         loads: state.loads,
         contactRadius: getValSafe('contactRadius', 4),
         points: getPoints(),
-        selectedResponses: responses.length > 0 ? responses : ['eps_z', 'sigma_z', 'deflection_z']
+        selectedResponses: responses.length > 0 ? responses : ['eps_z', 'sigma_z', 'deflection_z'],
+        unitSystem: state.unitSystem
     };
 }
 
