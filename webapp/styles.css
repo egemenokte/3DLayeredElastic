@@ -833,6 +833,21 @@ input[type="number"]::-webkit-outer-spin-button {
     display: block;
 }
 
+
+.point-row-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr 28px;
+    gap: var(--spacing-xs);
+    margin-bottom: 4px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.point-row-header span {
+    padding-left: 2px;
+}
+
 .point-row {
     display: flex;
     gap: var(--spacing-xs);

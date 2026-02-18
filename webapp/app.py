@@ -97,7 +97,9 @@ def analyze_heatmap():
         nu = [layer['poisson'] for layer in layers]
         
         # Prepare loads
-        L = [load['magnitude'] for load in loads]
+        unit_system = data.get('unitSystem', 'imperial')
+        load_scale = 1000.0 if unit_system == 'si' else 1.0  # SI UI uses kN, solver expects force consistent with MPa-mm (N)
+        L = [load['magnitude'] * load_scale for load in loads]
         LPos = [(load['x'], 0) for load in loads]  # y=0 for 2D analysis
         
         # Generate grid
@@ -198,7 +200,9 @@ def analyze_profile():
         nu = [layer['poisson'] for layer in layers]
         
         # Prepare loads
-        L = [load['magnitude'] for load in loads]
+        unit_system = data.get('unitSystem', 'imperial')
+        load_scale = 1000.0 if unit_system == 'si' else 1.0  # SI UI uses kN, solver expects force consistent with MPa-mm (N)
+        L = [load['magnitude'] * load_scale for load in loads]
         LPos = [(load['x'], 0) for load in loads]
         
         # Generate points based on profile type
@@ -286,7 +290,9 @@ def analyze_points():
         nu = [layer['poisson'] for layer in layers]
         
         # Prepare loads
-        L = [load['magnitude'] for load in loads]
+        unit_system = data.get('unitSystem', 'imperial')
+        load_scale = 1000.0 if unit_system == 'si' else 1.0  # SI UI uses kN, solver expects force consistent with MPa-mm (N)
+        L = [load['magnitude'] * load_scale for load in loads]
         LPos = [(load['x'], 0) for load in loads]
         
         # Extract unique x and z values
