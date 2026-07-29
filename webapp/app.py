@@ -29,8 +29,52 @@ LEA_CONFIG = {
                             # of the query grid, and of the resolution the user picks.
                             # 300 is the practical limit, above that the layer matrix
                             # recursion overflows.
-    'm_nodes': 400          # Uniform quadrature nodes over [0, m_max]
+    'm_nodes': 400,         # Uniform quadrature nodes over [0, m_max]
+    'chunk_budget': 6000,   # Depth slice size is chunk_budget/len(x). The solver holds a
+                            # depth by offset by integration array, so asking for a whole
+                            # 151x151 grid at once needs about 1 GB and Cloud Run kills the
+                            # container, which the browser sees as "Service Unavailable".
+                            # Slicing the depths keeps the peak near 320 MB. Results are
+                            # bit identical because m_max pins the integration grid, so a
+                            # point does not care what else was in the batch.
+    'max_grid_points': 150000   # Refuse anything bigger with a clear message
 }
+
+def run_lea(L, LPos, contact_radius, x_values, y_values, z_values, H, E, nu):
+    """Call Layer3D a few depths at a time and join the results.
+
+    Identical output to a single call, just a much lower memory peak.
+    """
+    x_values = list(x_values)
+    z_values = list(z_values)
+
+    n = len(x_values) * len(z_values)
+    if n > LEA_CONFIG['max_grid_points']:
+        raise ValueError(
+            'Grid is too large (%d points). Use a coarser resolution or a smaller '
+            'range. The limit is %d points.' % (n, LEA_CONFIG['max_grid_points']))
+
+    chunk = max(5, int(LEA_CONFIG['chunk_budget'] / max(1, len(x_values))))
+
+    parts = []
+    for i in range(0, len(z_values), chunk):
+        parts.append(Layer3D(
+            L, LPos, contact_radius,
+            x_values, y_values, z_values[i:i + chunk],
+            H, E, nu,
+            LEA_CONFIG['iterations'],
+            LEA_CONFIG['ZRO'],
+            np.ones(len(E)),  # Fully bonded
+            LEA_CONFIG['tolerance'],
+            verbose=False,
+            every=LEA_CONFIG['every'],
+            m_max=LEA_CONFIG['m_max'],
+            m_nodes=LEA_CONFIG['m_nodes']
+        ))
+
+    if len(parts) == 1:
+        return parts[0]
+    return {k: np.concatenate([p[k] for p in parts], axis=2) for k in parts[0]}
 
 # Response type metadata
 RESPONSE_TYPES = {
@@ -128,19 +172,9 @@ def analyze_heatmap():
         y_values = [0]  # 2D analysis at y=0
         
         # Run LEA
-        results = Layer3D(
-            L, LPos, contact_radius,
-            x_values.tolist(), y_values, z_values.tolist(),
-            H, E, nu,
-            LEA_CONFIG['iterations'],
-            LEA_CONFIG['ZRO'],
-            np.ones(len(E)),  # Fully bonded
-            LEA_CONFIG['tolerance'],
-            verbose=False,
-            every=LEA_CONFIG['every'],
-            m_max=LEA_CONFIG['m_max'],
-            m_nodes=LEA_CONFIG['m_nodes']
-        )
+        results = run_lea(L, LPos, contact_radius,
+                          x_values.tolist(), y_values, z_values.tolist(),
+                          H, E, nu)
         
         # All response types to extract
         all_responses = [
@@ -225,19 +259,9 @@ def analyze_profile():
         y_values = [0]
         
         # Run LEA
-        results = Layer3D(
-            L, LPos, contact_radius,
-            x_values, y_values, z_values,
-            H, E, nu,
-            LEA_CONFIG['iterations'],
-            LEA_CONFIG['ZRO'],
-            np.ones(len(E)),
-            LEA_CONFIG['tolerance'],
-            verbose=False,
-            every=LEA_CONFIG['every'],
-            m_max=LEA_CONFIG['m_max'],
-            m_nodes=LEA_CONFIG['m_nodes']
-        )
+        results = run_lea(L, LPos, contact_radius,
+                          x_values, y_values, z_values,
+                          H, E, nu)
         
         # Extract profiles
         profiles = {}
@@ -310,19 +334,9 @@ def analyze_points():
         y_values = [0]
         
         # Run LEA
-        results = Layer3D(
-            L, LPos, contact_radius,
-            x_values, y_values, z_values,
-            H, E, nu,
-            LEA_CONFIG['iterations'],
-            LEA_CONFIG['ZRO'],
-            np.ones(len(E)),
-            LEA_CONFIG['tolerance'],
-            verbose=False,
-            every=LEA_CONFIG['every'],
-            m_max=LEA_CONFIG['m_max'],
-            m_nodes=LEA_CONFIG['m_nodes']
-        )
+        results = run_lea(L, LPos, contact_radius,
+                          x_values, y_values, z_values,
+                          H, E, nu)
         
         # Build output for each point
         output_points = []

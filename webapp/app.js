@@ -665,7 +665,21 @@ async function runAnalysis() {
             body: JSON.stringify(data)
         });
 
-        const result = await response.json();
+        // The server may not answer with JSON. If the container runs out of memory
+        // the platform returns its own HTML error page, and parsing that as JSON used
+        // to produce a confusing "unexpected token" message.
+        const raw = await response.text();
+        let result;
+        try {
+            result = JSON.parse(raw);
+        } catch (parseError) {
+            if (response.status === 503 || response.status === 502) {
+                throw new Error('The server ran out of resources for this grid. ' +
+                                'Try a coarser resolution or a smaller range.');
+            }
+            throw new Error('Server error ' + response.status + '. ' +
+                            'Try a coarser resolution or a smaller range.');
+        }
 
         if (!response.ok) {
             throw new Error(result.error || 'Analysis failed');
