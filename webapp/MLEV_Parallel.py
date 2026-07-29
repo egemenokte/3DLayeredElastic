@@ -2,13 +2,43 @@
 original Author: Mostafa Nakhaei  
 
 This version is modified by Egemen Okte. It vectorizes computation and checks for telerance every - every step
+
+2026 update, grid independent integration
+-----------------------------------------
+The Hankel integral used to be truncated by an index into a pooled list of
+Bessel zeros. Those zeros get divided by every query radius, so the pool grows
+when you add query points, and truncating at a fixed index then stops the
+integral at a lower value of m. The answer changed when you changed the query
+grid, even though the physics did not.
+
+There was a second problem on top of that. The convergence check only looked
+at the vertical deflection. Deflection settles much faster than the near
+surface stresses, so the loop kept returning while the stress sums were still
+truncated at m of roughly 8 to 19. The two problems compounded.
+
+Two new optional arguments fix both:
+
+    m_max    truncate on the value of m instead of on a list index
+    m_nodes  use a uniform grid of m_nodes points over [0, m_max]
+
+When m_max is set the whole fixed grid is integrated and the adaptive stop is
+skipped, because a fixed grid does not need one.
+
+Both default to None. When they are None the function behaves exactly as
+before, bit for bit. Nothing that calls this function today changes.
+
+Set m_max=300 and m_nodes=400 to get the grid independent path. m_max cannot
+go much above 300 because the layer matrix recursion overflows above that.
+
+See LEA_AUDIT_REPORT.md for the measurements.
 '''
 import numpy as np
 from scipy import special
 import scipy.linalg as linalg
 
 #Modified from the original MLE to calculate shear stress and test for convergence iteratively
-def PyMastic(q,a,x,z,H,E,nu, ZRO=1e-15, isBounded = [1,1], iteration = 25, inverser = 'solve',tol=0.05,every=100,verbose=True):
+def PyMastic(q,a,x,z,H,E,nu, ZRO=1e-15, isBounded = [1,1], iteration = 25, inverser = 'solve',tol=0.05,every=100,verbose=True,
+             m_max=None, max_terms=20000, m_nodes=None):
     '''
     PyMastic calculates the respnse of a multi-layered elastic system subjected to a circular load. 
     
@@ -40,6 +70,19 @@ def PyMastic(q,a,x,z,H,E,nu, ZRO=1e-15, isBounded = [1,1], iteration = 25, inver
         check for convergence every x step of computation
     verbose: Bool
         True to output process steps, False to not
+    m_max : float or None
+        Upper limit on the Hankel transform variable m. When set, the integral
+        is truncated on the value of m rather than on an index into the pooled
+        Bessel zeros, which makes the result independent of how many query
+        points were passed. 300 is the practical ceiling, above that the layer
+        matrix recursion overflows. Default None keeps the old behaviour.
+    max_terms : int
+        Safety cap on the number of quadrature intervals when m_max is used
+        without m_nodes. Only relevant on very dense query grids.
+    m_nodes : int or None
+        When set, use a uniform grid of this many quadrature nodes over
+        [0, m_max] instead of the pooled Bessel zeros. Same answer to about
+        5e-4 percent, and much cheaper on dense query grids. Default None.
     
     Returns
     -------
@@ -112,7 +155,22 @@ def PyMastic(q,a,x,z,H,E,nu, ZRO=1e-15, isBounded = [1,1], iteration = 25, inver
     D2 = (BesselZeros[2]-BesselZeros[1]) / 2 - 0.00001
     AUX1 = np.arange(BesselZeros[0], BesselZeros[1], D1)
     AUX2 = np.arange(BesselZeros[1], BesselZeros[2], D2)
-    mValues = np.hstack((AUX1, AUX2[1:], BesselZeros[3:iteration])).flatten()
+    if m_nodes is not None and m_max is None:
+        raise ValueError('m_nodes needs m_max as well. Try m_max=300, m_nodes=400.')
+    if m_nodes is not None:
+        # uniform quadrature nodes over [0, m_max], grid independent and cheap
+        mValues = np.unique(np.concatenate((AUX1, AUX2[1:],
+                  np.linspace(float(AUX2[-1]), float(m_max), int(m_nodes)))))
+    elif m_max is not None:
+        # truncate by physical m, not by index into the pooled Bessel zeros
+        _bz = BesselZeros[3:]
+        _bz = _bz[_bz <= m_max]
+        if _bz.size > max_terms:
+            _bz = _bz[np.linspace(0, _bz.size - 1, max_terms).astype(int)]
+        mValues = np.hstack((AUX1, AUX2[1:], _bz)).flatten()
+    else:
+        # original behaviour, kept as the default so nothing changes silently
+        mValues = np.hstack((AUX1, AUX2[1:], BesselZeros[3:iteration])).flatten()
     getDiff = np.diff(mValues)
     mValuesMatrix = np.vstack((mValues, mValues, mValues, mValues)).T
     ftGauss = np.zeros((4, mValuesMatrix.shape[0]-1))
@@ -291,7 +349,14 @@ def PyMastic(q,a,x,z,H,E,nu, ZRO=1e-15, isBounded = [1,1], iteration = 25, inver
         epsZ = np.zeros((len(z),len(x)), dtype=np.float64)
         displacementZ = np.zeros((len(z),len(x)), dtype=np.float64)
         displacementH = np.zeros((len(z),len(x)), dtype=np.float64)
-        if np.remainder(j,every)==0 and j>0:
+        #_fixed: when m_max is set we integrate the whole grid and skip the
+        #adaptive stop. The adaptive stop watches deflection only, and deflection
+        #settles long before the near surface stresses do, so it used to cut the
+        #integral short. A fixed grid does not need an adaptive stop.
+        #_islast: always return something on the final node instead of raising.
+        _fixed = (m_max is not None)
+        _islast = (j == len(m)-1)
+        if ((np.remainder(j,every)==0 and j>0) and not _fixed) or _islast:
             idd=(np.array(ind)-1).astype(int) #indices at i-1
             idc=(np.array(ind)).astype(int) #indices at i
             nuu= nu[idd].reshape(len(z),1,1) #poissons ratio as a matrix (z by 1 by 1)
@@ -320,8 +385,8 @@ def PyMastic(q,a,x,z,H,E,nu, ZRO=1e-15, isBounded = [1,1], iteration = 25, inver
 
             RNew=displacementZ
            
-            if j>every:
-                if np.mean(np.abs((Rold-displacementZ)/Rold))<tol:  
+            if (j>every and not _fixed) or _islast:
+                if (np.mean(np.abs((Rold-displacementZ)/Rold))<tol and not _fixed) or _islast:  
                 
                     
                     

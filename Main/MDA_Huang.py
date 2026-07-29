@@ -7,9 +7,13 @@ Created on Sat Jun  5 19:57:57 2021
 Multi dimensional analysis built on top of MLE. Experimental
 """
 import numpy as np
+import warnings
 # from Main.MLEV3 import PyMastic
 from Main.MLEV_Parallel import PyMastic
-def Layer3D(L,LPos,a,x,y,z,H,E,nu,it,ZRO=7*1e-22 ,isBD=[1,1],tolerance=10**-6,verbose=True,every=100):
+def Layer3D(L,LPos,a,x,y,z,H,E,nu,it,ZRO=7*1e-22 ,isBD=[1,1],tolerance=10**-6,verbose=True,every=100,
+            m_max=None,m_nodes=None):
+    #m_max and m_nodes are passed straight through to PyMastic. Leave them as
+    #None to keep the old behaviour. See MLEV_Parallel.py for what they do.
     #First, we are going to calculate x,y and z stresses from z,r and t. Then we are going to use superposition to add those up
     #At the end, with everything in place, we are going to calculate strains
     tolerance=tolerance/100
@@ -38,9 +42,13 @@ def Layer3D(L,LPos,a,x,y,z,H,E,nu,it,ZRO=7*1e-22 ,isBD=[1,1],tolerance=10**-6,ve
         unique_pts=np.unique(pts) #Find the unique ones to save time
         #Calculate the stresses (and strains but we are not using them yet)
         try:
-            DRS[i] = PyMastic(L[i]/np.pi/a**2,a,unique_pts,z,H,E,nu, ZRO, isBounded = np.ones(len(H)), iteration = it, inverser = 'solve',tol=tolerance,every=every,verbose=verbose)
-        except:
-            DRS[i] = PyMastic(L[i]/np.pi/a**2,a,unique_pts,z,H,E,nu, ZRO, isBounded = np.ones(len(H)), iteration = it, inverser = 'solve',tol=tolerance,every=20,verbose=verbose)
+            DRS[i] = PyMastic(L[i]/np.pi/a**2,a,unique_pts,z,H,E,nu, ZRO, isBounded = np.ones(len(H)), iteration = it, inverser = 'solve',tol=tolerance,every=every,verbose=verbose,m_max=m_max,m_nodes=m_nodes)
+        except TypeError: #ran out of quadrature nodes before the tolerance was met
+            #the retry below converges very early, so near surface results get worse.
+            #warn instead of failing silently. Bare except used to hide this.
+            warnings.warn('LEA did not converge with every=%s, retrying with every=20. '
+                          'Near surface results may be inaccurate. Consider m_max=300, m_nodes=400.'%every)
+            DRS[i] = PyMastic(L[i]/np.pi/a**2,a,unique_pts,z,H,E,nu, ZRO, isBounded = np.ones(len(H)), iteration = it, inverser = 'solve',tol=tolerance,every=20,verbose=verbose,m_max=m_max,m_nodes=m_nodes)
         # We have to convert the unique points back into the grid form
         for j in range(len(unique_pts)):
             query=np.where(pts==unique_pts[j]) #Find in the original grid, where they are

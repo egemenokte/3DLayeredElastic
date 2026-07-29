@@ -24,7 +24,12 @@ LEA_CONFIG = {
     'ZRO': 7e-20,           # Zero threshold to avoid division by zero
     'iterations': 1600,     # Maximum iterations
     'tolerance': 0.01,      # Convergence tolerance
-    'every': 10             # Check convergence every N steps
+    'every': 10,            # Check convergence every N steps, ignored when m_max is set
+    'm_max': 300,           # Ceiling of the Hankel integral. Keeps results independent
+                            # of the query grid, and of the resolution the user picks.
+                            # 300 is the practical limit, above that the layer matrix
+                            # recursion overflows. See LEA_AUDIT_REPORT.md.
+    'm_nodes': 400          # Uniform quadrature nodes over [0, m_max]
 }
 
 # Response type metadata
@@ -132,7 +137,9 @@ def analyze_heatmap():
             np.ones(len(E)),  # Fully bonded
             LEA_CONFIG['tolerance'],
             verbose=False,
-            every=LEA_CONFIG['every']
+            every=LEA_CONFIG['every'],
+            m_max=LEA_CONFIG['m_max'],
+            m_nodes=LEA_CONFIG['m_nodes']
         )
         
         # All response types to extract
@@ -227,7 +234,9 @@ def analyze_profile():
             np.ones(len(E)),
             LEA_CONFIG['tolerance'],
             verbose=False,
-            every=LEA_CONFIG['every']
+            every=LEA_CONFIG['every'],
+            m_max=LEA_CONFIG['m_max'],
+            m_nodes=LEA_CONFIG['m_nodes']
         )
         
         # Extract profiles
@@ -310,7 +319,9 @@ def analyze_points():
             np.ones(len(E)),
             LEA_CONFIG['tolerance'],
             verbose=False,
-            every=LEA_CONFIG['every']
+            every=LEA_CONFIG['every'],
+            m_max=LEA_CONFIG['m_max'],
+            m_nodes=LEA_CONFIG['m_nodes']
         )
         
         # Build output for each point
