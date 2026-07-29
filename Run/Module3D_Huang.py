@@ -80,7 +80,7 @@ it = 1600            # number of maximum iterations
 tolerance=0.05     #average percent error of query points
 every=100 #check for convergence every x steps
 m_max=300  #ceiling of the Hankel integral. Keeps results independent of the query grid
-m_nodes=400 #quadrature nodes over [0, m_max]. See LEA_AUDIT_REPORT.md
+m_nodes=400 #quadrature nodes over [0, m_max]
 #every is ignored when m_max is set, the whole fixed grid is integrated
 sns.set(rc={'figure.figsize':(20,10)},font_scale=1.15)
 

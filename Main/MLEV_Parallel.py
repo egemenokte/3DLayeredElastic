@@ -29,8 +29,6 @@ before, bit for bit. Nothing that calls this function today changes.
 
 Set m_max=300 and m_nodes=400 to get the grid independent path. m_max cannot
 go much above 300 because the layer matrix recursion overflows above that.
-
-See LEA_AUDIT_REPORT.md for the measurements.
 '''
 import numpy as np
 from scipy import special
