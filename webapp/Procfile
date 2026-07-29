@@ -1,0 +1,13 @@
+# Cloud Run entrypoint.
+#
+# Without this file the buildpack starts gunicorn with its default 30 second
+# worker timeout, and a fine resolution heatmap gets killed mid calculation
+# with [CRITICAL] WORKER TIMEOUT. The browser then sees a 500.
+#
+# --timeout 0 is what Google recommends for Cloud Run. Cloud Run enforces its
+# own request timeout, so gunicorn does not need a second one.
+#
+# --threads 1 keeps one request per instance. A fine grid peaks near 320 MB and
+# an instance gets 512 MiB, so two at once would not fit. Cloud Run starts
+# another instance instead, which is what you want.
+web: gunicorn --bind :$PORT --workers 1 --threads 1 --timeout 0 app:app
