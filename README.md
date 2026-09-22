@@ -1,6 +1,6 @@
 # 3DLayeredElastic
 
-3DLayeredElastic is a Python tool for analyzing the behavior of 3D structures with multiple layers under various loading conditions. Built on top of the PyMastic library, it offers flexibility to researchers working with layered materials. It is an experimental tool.
+3DLayeredElastic is a Python tool for analyzing the behavior of 3D structures with multiple layers under various loading conditions. Built on top of the PyMastic library, it offers flexibility to researchers working with layered materials. It is an experimental tool. It also comes with a web-based application [weblea](https://weblea.egemenokte.com). The web-based version and the latest near surface response stability integration of this program was prepared with the assistance of Claude 4.6 Opus.
 
 **Key Features:**
 
